@@ -1,3 +1,4 @@
+#pip install adafruit-circuitpython-ads1x15
 import time
 import board
 import busio
