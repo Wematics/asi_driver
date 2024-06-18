@@ -1,0 +1,15 @@
+sudo apt-get install python3-full
+sudo apt-get update
+sudo apt-get install -y python3-full python3-pip python3-dev python3-venv libgpiod2
+
+python3 -m venv bme280_env
+
+source bme280_env/bin/activate
+
+pip install adafruit-blinka
+pip install adafruit-circuitpython-bme280
+pip install gpiod
+
+nano bme280_sensor.py
+
+python bme280_sensor.py
