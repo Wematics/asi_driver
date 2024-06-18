@@ -4,3 +4,20 @@ sudo apt-get install pigpio
 
 sudo systemctl enable pigpiod
 sudo systemctl start pigpiod
+
+
+nano heater_control.sh
+
+chmod +x heater_control.sh
+
+
+./heater_control.sh heater-on
+./heater_control.sh heater-off
+
+./heater_control.sh pm-heater-on
+
+./heater_control.sh pm-heater-off
+
+./heater_control.sh fault
+
+
