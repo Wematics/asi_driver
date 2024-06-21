@@ -1,0 +1,33 @@
+sudo apt-get update
+sudo apt-get install stress
+
+
+stress --cpu $(nproc) --timeout 300
+
+
+  $(nproc) dynamically determines the number of CPU cores.
+--timeout 300 runs the stress test for 300 seconds (5 minutes). You can adjust this duration as needed.
+
+
+  watch -n 1 vcgencmd measure_clock arm
+watch -n 1 vcgencmd measure_volts core
+
+
+#!/bin/bash
+
+echo "Starting stress test..."
+
+# Start the stress test in the background
+stress --cpu $(nproc) --timeout 300 &
+
+# Monitor CPU frequency, voltage, and temperature
+echo "Monitoring CPU frequency, voltage, and temperature..."
+watch -n 1 "vcgencmd measure_clock arm && vcgencmd measure_volts core && vcgencmd measure_temp"
+
+echo "Stress test complete."
+
+
+  chmod +x cpu_test.sh
+
+  ./cpu_test.sh
+
