@@ -1,0 +1,20 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";
+
+    fragment@0 {
+        target = <&i2c1>;
+        __overlay__ {
+            #address-cells = <1>;
+            #size-cells = <0>;
+
+            emc2301: emc2301@2f {
+                compatible = "microchip,emc2301";
+                reg = <0x2f>;
+                #cooling-cells = <2>;
+            };
+        };
+    };
+};
