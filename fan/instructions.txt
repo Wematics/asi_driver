@@ -1,0 +1,82 @@
+zum testen:
+
+echo "emc2301 0x2f" | sudo tee /sys/class/i2c-adapter/i2c-1/new_device
+
+echo 255 | sudo tee /sys/class/hwmon/hwmon3/pwm1
+
+##############
+
+need to be automize, so its working still working after reboot
+
+
+nano emc2301-overlay.dts
+
+/dts-v1/;
+/plugin/;
+
+ / {
+     compatible = "brcm,bcm2835";
+
+     fragment@0 {
+         target = <&i2c1>;
+         __overlay__ {
+             #address-cells = <1>;
+             #size-cells = <0>;
+
+             emc2301: emc2301@2f {
+                 compatible = "microchip,emc2301";
+                 reg = <0x2f>;
+                 #cooling-cells = <2>;
+             };
+         };
+     };
+ };
+
+dtc -@ -I dts -O dtb -o emc2301-overlay.dtbo emc2301-overlay.dts
+
+sudo cp emc2301-overlay.dtbo /boot/firmware/overlays/
+
+sudo nano /boot/firmware/config.txt
+
+dtoverlay=emc2301-overlay
+
+sudo reboot
+
+check it with: 
+
+ls -l /sys/class/hwmon/hwmon3/pwm1
+ls /sys/class/hwmon/
+echo 255 | sudo sh -c 'tee /sys/class/hwmon/hwmon3/pwm1'
+dmesg | grep emc2301
+cat /boot/firmware/config.txt | grep dtoverlay
+dmesg | grep -i dtb
+
+for hwmon in /sys/class/hwmon/*; do
+    echo "$hwmon:";
+    cat $hwmon/name;
+    ls $hwmon;
+    echo "";
+done
+
+ls /boot/firmware/overlays/ | grep emc2301
+sudo i2cdetect -y 1
+
+
+
+
+cat /sys/class/hwmon/hwmon2/pwm1
+echo 255 | sudo tee /sys/class/hwmon/hwmon2/pwm1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
