@@ -1,4 +1,39 @@
 sudo apt-get install util-linux
 
+sudo rpi-eeprom-config --edit
 
-https://github.com/bablokb/pi-wake-on-rtc
+POWER_OFF_ON_HALT=0
+Change to
+POWER_OFF_ON_HALT=1
+
+WAKE_ON_GPIO=0
+
+
+
+echo enabled | sudo tee /sys/class/rtc/rtc0/device/power/wakeup
+
+
+sudo hwclock -w  # Write system time to RTC
+
+sudo nano /boot/firmware/config.txt
+
+dtparam=rtc_bbat_vchg=3000000
+
+
+
+
+#Clear Any Existing Wake Alarms:
+
+echo 0 | sudo tee /sys/class/rtc/rtc0/wakealarm
+
+#Set Wake-Up Alarm for 2 Minutes Later:
+
+echo "+120" | sudo tee /sys/class/rtc/rtc0/wakealarm
+
+
+sudo shutdown -h now  #sudo halt
+
+
+sudo dmesg | grep rtc
+sudo dmesg | grep shutdown
+
