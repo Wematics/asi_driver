@@ -1,0 +1,19 @@
+# Disable Bluetooth
+sudo systemctl disable bluetooth
+sudo systemctl disable bthelper@.service
+
+# Disable Avahi Daemon
+sudo systemctl disable avahi-daemon
+
+# Disable Printing Services
+sudo systemctl disable cups
+sudo systemctl disable cups-browsed
+
+# Disable Colord
+sudo systemctl disable colord
+
+# Disable Printer Configuration
+sudo systemctl disable configure-printer@.service
+
+# Disable Accounts Daemon
+sudo systemctl disable accounts-daemon
