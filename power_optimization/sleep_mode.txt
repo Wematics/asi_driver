@@ -1,0 +1,4 @@
+sudo apt-get install util-linux
+
+
+https://github.com/bablokb/pi-wake-on-rtc
