@@ -1,0 +1,8 @@
+#sudo nano /etc/systemd/system/check-sunset.service
+
+[Unit]
+Description=Check sunset time and set wake alarm
+
+[Service]
+Type=oneshot
+ExecStart=/home/pi/sun_times_project/venv/bin/python /home/pi/sun_times_project/check_sunset.py
