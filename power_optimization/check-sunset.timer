@@ -1,12 +1,13 @@
-#sudo journalctl -u check-sunset.service
+#sudo nano /etc/systemd/system/check-sunset.timer
 
 [Unit]
 Description=Run check-sunset service every minute
 
 [Timer]
-OnBootSec=30s
-OnUnitActiveSec=30s
+OnBootSec=1min
+OnUnitActiveSec=1min
 Unit=check-sunset.service
 
 [Install]
 WantedBy=timers.target
+
