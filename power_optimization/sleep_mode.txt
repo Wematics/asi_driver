@@ -12,6 +12,8 @@ WAKE_ON_GPIO=0
 
 echo enabled | sudo tee /sys/class/rtc/rtc0/device/power/wakeup
 
+#check
+timedatectl
 
 sudo hwclock -w  # Write system time to RTC
 
