@@ -1,50 +1,75 @@
 import csv
-from datetime import datetime
-from astral import LocationInfo
-from astral.sun import sun
+from datetime import datetime, timedelta
+import subprocess
+import logging
 
-def generate_sun_times(location_name, latitude, longitude, start_year, years_ahead):
-    location = LocationInfo(location_name, "Earth", "UTC", latitude, longitude)
-    sun_times = []
-    
-    for year in range(start_year, start_year + years_ahead):
-        for month in range(1, 13):
-            date = datetime(year, month, 15)  # Using 15th as representative for the month
-            s = sun(location.observer, date=date, tzinfo="UTC")
-            sunrise = s['sunrise']
-            sunset = s['sunset']
-            sun_times.append([date.strftime("%Y-%m"), sunrise.strftime("%H:%M"), sunset.strftime("%H:%M")])
+# Set up logging
+logging.basicConfig(filename='/home/pi/sun_times_project/sleep_wake.log', level=logging.INFO, format='%(asctime)s - %(message)s')
 
-    return sun_times
+# Path to the lookup table
+CSV_FILE = "/home/pi/sun_times_project/sun_times_dresden.csv"
 
-def save_to_csv(filename, sun_times):
-    with open(filename, mode='w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(["Month", "Sunrise", "Sunset"])
-        for sun_time in sun_times:
-            writer.writerow(sun_time)
+def read_sun_times(csv_file):
+    current_year_month = datetime.now().strftime("%Y-%m")
+    logging.info(f"Current year-month: {current_year_month}")
+    sunrise = sunset = None
+
+    try:
+        with open(csv_file, mode='r') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                if row['Month'] == current_year_month:
+                    sunrise = row['Sunrise']
+                    sunset = row['Sunset']
+                    logging.info(f"Found sunrise: {sunrise}, sunset: {sunset} for month: {current_year_month}")
+                    break
+    except FileNotFoundError:
+        logging.error(f"CSV file not found: {csv_file}")
+    except Exception as e:
+        logging.error(f"Error reading CSV file: {e}")
+
+    return sunrise, sunset
+
+def set_rtc_wake_alarm(wake_time):
+    # Calculate the time difference in seconds for wake time
+    wake_diff = int((wake_time - datetime.now()).total_seconds())
+
+    # Set RTC wake alarm
+    try:
+        subprocess.run(["sudo", "bash", "-c", f"echo +{wake_diff} > /sys/class/rtc/rtc0/wakealarm"], check=True)
+        logging.info(f"RTC wake alarm set for {wake_time}")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Failed to set RTC wake alarm: {e}")
+
+    # Shutdown the system 30 seconds after setting the wake alarm
+    logging.info("Shutting down system in 30 seconds")
+    subprocess.run(["sleep", "30"])
+    try:
+        subprocess.run(["sudo", "shutdown", "-h", "now"], check=True)
+        logging.info("System shutdown")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Failed to shutdown the system: {e}")
 
 if __name__ == "__main__":
-    # Parameters for Dresden
-    location_name_dresden = "Dresden"
-    latitude_dresden = 51.0504
-    longitude_dresden = 13.7373
-    start_year = 2024
-    years_ahead = 10
-    output_file_dresden = "sun_times_dresden.csv"
-    
-    # Generate and save sun times for Dresden
-    sun_times_dresden = generate_sun_times(location_name_dresden, latitude_dresden, longitude_dresden, start_year, years_ahead)
-    save_to_csv(output_file_dresden, sun_times_dresden)
-    print(f"Sun times for Dresden saved to {output_file_dresden}")
-    
-    # Parameters for Stanford
-    location_name_stanford = "Stanford"
-    latitude_stanford = 37.4275
-    longitude_stanford = -122.1697
-    output_file_stanford = "sun_times_stanford.csv"
-    
-    # Generate and save sun times for Stanford
-    sun_times_stanford = generate_sun_times(location_name_stanford, latitude_stanford, longitude_stanford, start_year, years_ahead)
-    save_to_csv(output_file_stanford, sun_times_stanford)
-    print(f"Sun times for Stanford saved to {output_file_stanford}")
+    sunrise, sunset = read_sun_times(CSV_FILE)
+    if sunrise and sunset:
+        # Get today's date
+        today = datetime.now().strftime("%Y-%m-%d")
+        
+        # Convert sunrise and sunset to datetime objects for today
+        sunrise_time = datetime.strptime(f"{today} {sunrise}", "%Y-%m-%d %H:%M")
+        sunset_time = datetime.strptime(f"{today} {sunset}", "%Y-%m-%d %H:%M")
+
+        # Get the current time
+        current_time = datetime.now()
+
+        # Check if the current time is past sunset
+        if current_time > sunset_time:
+            # Set the wake time for the next day's sunrise
+            next_sunrise_time = sunrise_time + timedelta(days=1)
+            logging.info(f"Current time is past sunset: {sunset_time}. Setting wake time for next sunrise: {next_sunrise_time}")
+            set_rtc_wake_alarm(next_sunrise_time)
+        else:
+            logging.info(f"Current time is before sunset: {sunset_time}. System will remain on.")
+    else:
+        logging.error("Sunrise and sunset times not found for the current month.")
