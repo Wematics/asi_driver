@@ -39,8 +39,8 @@ def set_rtc_wake_alarm(seconds_until_wake):
         logging.error(f"Failed to set RTC wake alarm: {e}")
 
     # Shutdown the system 30 seconds after setting the wake alarm
-    logging.info("Shutting down system in 45 seconds")
-    subprocess.run(["sleep", "45"])
+    logging.info("Shutting down system in 30 seconds")
+    subprocess.run(["sleep", "30"])
     try:
         subprocess.run(["sudo", "shutdown", "-h", "now"], check=True)
         logging.info("System shutdown")
@@ -50,20 +50,17 @@ def set_rtc_wake_alarm(seconds_until_wake):
 if __name__ == "__main__":
     sunrise, sunset = read_sun_times(CSV_FILE)
     if sunrise and sunset:
-        # Get today's date
-        today = datetime.now().strftime("%Y-%m-%d")
-        
-        # Convert sunrise and sunset to datetime objects for today
-        sunrise_time = datetime.strptime(f"{today} {sunrise}", "%Y-%m-%d %H:%M")
-        sunset_time = datetime.strptime(f"{today} {sunset}", "%Y-%m-%d %H:%M")
-
-        # Get the current time
+        # Get the current date and time
         current_time = datetime.now()
+        
+        # Convert sunrise and sunset times to datetime objects for the current date
+        sunrise_time = datetime.strptime(f"{current_time.strftime('%Y-%m')} {sunrise}", "%Y-%m %H:%M")
+        sunset_time = datetime.strptime(f"{current_time.strftime('%Y-%m')} {sunset}", "%Y-%m %H:%M")
 
         # Check if the current time is past sunset
         if current_time > sunset_time:
-            # Calculate the difference in seconds between sunset and the next sunrise
-            time_diff = abs((sunrise_time - sunset_time).total_seconds())
+            # Calculate the time difference in seconds between sunset and the next sunrise
+            time_diff = abs((sunrise_time - sunset_time).total_seconds())  # Ensure positive number
             logging.info(f"Current time is past sunset: {sunset_time}. Setting wake time for sunrise.")
             set_rtc_wake_alarm(int(time_diff))
         else:
