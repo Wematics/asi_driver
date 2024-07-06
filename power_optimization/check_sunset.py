@@ -38,9 +38,9 @@ def set_rtc_wake_alarm(seconds_until_wake):
     except subprocess.CalledProcessError as e:
         logging.error(f"Failed to set RTC wake alarm: {e}")
 
-    # Shutdown the system 30 seconds after setting the wake alarm
-    logging.info("Shutting down system in 30 seconds")
-    subprocess.run(["sleep", "30"])
+    # Shutdown the system 45 seconds after setting the wake alarm
+    logging.info("Shutting down system in 45 seconds")
+    subprocess.run(["sleep", "45"])
     try:
         subprocess.run(["sudo", "shutdown", "-h", "now"], check=True)
         logging.info("System shutdown")
