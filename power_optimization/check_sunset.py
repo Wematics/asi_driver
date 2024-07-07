@@ -9,19 +9,18 @@ logging.basicConfig(filename='/home/pi/sun_times_project/sleep_wake.log', level=
 # Path to the lookup table
 CSV_FILE = "/home/pi/sun_times_project/sun_times_dresden.csv"
 
-def read_sun_times(csv_file):
-    current_year_month = datetime.now().strftime("%Y-%m")
-    logging.info(f"Current year-month: {current_year_month}")
+def read_sun_times(csv_file, year_month):
+    logging.info(f"Reading sun times for year-month: {year_month}")
     sunrise = sunset = None
 
     try:
         with open(csv_file, mode='r') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                if row['Month'] == current_year_month:
+                if row['Month'] == year_month:
                     sunrise = row['Sunrise']
                     sunset = row['Sunset']
-                    logging.info(f"Found sunrise: {sunrise}, sunset: {sunset} for month: {current_year_month}")
+                    logging.info(f"Found sunrise: {sunrise}, sunset: {sunset} for month: {year_month}")
                     break
     except FileNotFoundError:
         logging.error(f"CSV file not found: {csv_file}")
@@ -31,7 +30,6 @@ def read_sun_times(csv_file):
     return sunrise, sunset
 
 def set_rtc_wake_alarm(seconds_until_wake):
-    # Set RTC wake alarm
     try:
         subprocess.run(["sudo", "bash", "-c", f"echo +{seconds_until_wake} > /sys/class/rtc/rtc0/wakealarm"], check=True)
         logging.info(f"RTC wake alarm set for {seconds_until_wake} seconds from now")
@@ -41,7 +39,6 @@ def set_rtc_wake_alarm(seconds_until_wake):
         return False
 
 def shutdown_system():
-    # Shutdown the system 45 seconds after setting the wake alarm
     logging.info("Shutting down system in 45 seconds")
     subprocess.run(["sleep", "45"])
     try:
@@ -51,28 +48,39 @@ def shutdown_system():
         logging.error(f"Failed to shutdown the system: {e}")
 
 if __name__ == "__main__":
-    sunrise, sunset = read_sun_times(CSV_FILE)
+    current_time = datetime.now()
+    current_year_month = current_time.strftime("%Y-%m")
+    today_date = current_time.strftime("%Y-%m-%d")
+
+    sunrise, sunset = read_sun_times(CSV_FILE, current_year_month)
+
     if sunrise and sunset:
-        # Get the current date and time
-        current_time = datetime.now()
-        today_date = current_time.strftime("%Y-%m-%d")
-        
-        # Convert sunrise and sunset times to datetime objects using today's date
         sunrise_time = datetime.strptime(f"{today_date} {sunrise}", "%Y-%m-%d %H:%M")
         sunset_time = datetime.strptime(f"{today_date} {sunset}", "%Y-%m-%d %H:%M")
 
-        # Check if the current time is past sunset
         if current_time > sunset_time:
-            # Calculate the time difference in seconds between sunset and the next sunrise
-            next_day_sunrise_time = sunrise_time + timedelta(days=1)
-            time_diff = (next_day_sunrise_time - current_time).total_seconds()
-            logging.info(f"Current time is past sunset: {sunset_time}. Setting wake time for sunrise.")
-            if set_rtc_wake_alarm(int(time_diff)):
-                shutdown_system()
+            next_day = current_time + timedelta(days=1)
+            next_year_month = next_day.strftime("%Y-%m")
+            next_day_date = next_day.strftime("%Y-%m-%d")
+
+            if next_year_month != current_year_month:
+                sunrise_next_day, _ = read_sun_times(CSV_FILE, next_year_month)
+                if sunrise_next_day:
+                    sunrise_time = datetime.strptime(f"{next_day_date} {sunrise_next_day}", "%Y-%m-%d %H:%M")
+                else:
+                    logging.error("Sunrise time not found for the next month.")
+                    sunrise_time = None
             else:
-                logging.info("Wake-up alarm not set, system will remain on.")
+                sunrise_time = datetime.strptime(f"{next_day_date} {sunrise}", "%Y-%m-%d %H:%M")
+
+            if sunrise_time:
+                time_diff = (sunrise_time - current_time).total_seconds()
+                logging.info(f"Current time is past sunset: {sunset_time}. Setting wake time for sunrise.")
+                if set_rtc_wake_alarm(int(time_diff)):
+                    shutdown_system()
+                else:
+                    logging.info("Wake-up alarm not set, system will remain on.")
         else:
             logging.info(f"Current time is before sunset: {sunset_time}. System will remain on.")
     else:
         logging.error("Sunrise and sunset times not found for the current month.")
-
