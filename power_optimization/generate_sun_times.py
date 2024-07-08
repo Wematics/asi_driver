@@ -1,3 +1,4 @@
+#pip install astral
 import csv
 from datetime import datetime, timedelta
 from astral import LocationInfo
