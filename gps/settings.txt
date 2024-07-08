@@ -43,3 +43,41 @@ chmod +x setup_gpsd.sh
 
 ALTERNATIVE MANUALLY --> SAVING ENERGY (1.5-2W when GPS SENSOR ACTIVE)
 
+sudo systemctl disable gpsd
+sudo systemctl disable gpsd.socket
+
+#!/bin/bash
+
+case "$1" in
+    start)
+        echo "Starting gpsd..."
+        sudo systemctl start gpsd.socket
+        sudo systemctl start gpsd
+        echo "gpsd started."
+        ;;
+    stop)
+        echo "Stopping gpsd..."
+        sudo systemctl stop gpsd
+        sudo systemctl stop gpsd.socket
+        echo "gpsd stopped."
+        ;;
+    status)
+        sudo systemctl status gpsd
+        sudo systemctl status gpsd.socket
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|status}"
+        exit 1
+esac
+
+
+chmod +x control_gpsd.sh
+
+./control_gpsd.sh start
+cgps -s
+
+./control_gpsd.sh stop
+./control_gpsd.sh status
+
+
+
