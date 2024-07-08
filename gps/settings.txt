@@ -1,0 +1,41 @@
+sudo nano /boot/firmware/config.txt
+
+dtoverlay=uart3
+
+sudo reboot
+
+
+#!/bin/bash
+
+# Update and install required packages
+sudo apt update
+sudo apt install gpsd gpsd-clients -y
+
+# Configure gpsd
+sudo bash -c 'cat << EOF > /etc/default/gpsd
+DEVICES="/dev/ttyAMA3"
+GPSD_OPTIONS="-n"
+USBAUTO="true"
+EOF'
+
+# Stop any running gpsd services
+sudo systemctl stop gpsd
+sudo systemctl stop gpsd.socket
+sudo killall gpsd
+sudo rm /var/run/gpsd.sock
+
+# Reload systemd configuration and enable services
+sudo systemctl daemon-reload
+sudo systemctl enable gpsd.socket
+sudo systemctl start gpsd.socket
+sudo systemctl enable gpsd
+sudo systemctl start gpsd
+
+# Verify GPS data
+cgps -s
+gpsmon
+
+
+
+chmod +x setup_gpsd.sh
+./setup_gpsd.sh
