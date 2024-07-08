@@ -40,8 +40,21 @@ sudo dmesg | grep rtc
 sudo dmesg | grep shutdown
 
 
-
 ####################
+
+sudo systemctl enable check-sunset.service
+sudo systemctl enable check-sunset.timer
+sudo systemctl start check-sunset.service
+sudo systemctl start check-sunset.timer
+sudo systemctl status check-sunset.service
+sudo systemctl status check-sunset.timer
+
+
+sudo systemctl disable check-sunset.service
+sudo systemctl disable check-sunset.timer
+sudo systemctl stop check-sunset.service
+sudo systemctl stop check-sunset.timer
+
 
 
 
