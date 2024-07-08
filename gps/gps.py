@@ -9,15 +9,16 @@
 #source ~/venv/asi_system/bin/activate
 #pip install pyserial adafruit-circuitpython-gps
 
-
 import time
 import serial
 import adafruit_gps
 
-uart = serial.Serial("/dev/ttyAMA0", baudrate=9600, timeout=10)
+uart = serial.Serial("/dev/ttyAMA3", baudrate=9600, timeout=10)
 gps = adafruit_gps.GPS(uart, debug=False)
 
+# Turn on the basic GGA and RMC info (what you typically want)
 gps.send_command(b'PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
+# Set update rate to once a second (1hz) which is what you typically want.
 gps.send_command(b'PMTK220,1000')
 
 last_print = time.monotonic()
@@ -29,6 +30,8 @@ while True:
         last_print = current
         if not gps.has_fix:
             print('Waiting for fix...')
+            raw_data = gps._uart.readline()
+            print('Raw data:', raw_data)
             continue
 
         print('=' * 40)
@@ -55,5 +58,4 @@ while True:
             print('Horizontal dilution: {}'.format(gps.horizontal_dilution))
         if gps.height_geoid is not None:
             print('Height geo ID: {} meters'.format(gps.height_geoid))
-
 
