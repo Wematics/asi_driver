@@ -39,3 +39,7 @@ gpsmon
 
 chmod +x setup_gpsd.sh
 ./setup_gpsd.sh
+
+
+ALTERNATIVE MANUALLY --> SAVING ENERGY (1.5-2W when GPS SENSOR ACTIVE)
+
