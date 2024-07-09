@@ -1,8 +1,18 @@
 #sudo nano /etc/systemd/system/check-sunset.service
-
 [Unit]
 Description=Check sunset time and set wake alarm
+After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/home/pi/sun_times_project/venv/bin/python /home/pi/sun_times_project/check_sunset.py
+ExecStart=/home/pi/venv/asi_system/bin/python /home/pi/sleep_mode/check_sunset.py
+WorkingDirectory=/home/pi/sleep_mode
+User=pi
+Group=pi
+
+[Install]
+WantedBy=multi-user.target
+
+#sudo systemctl daemon-reload
+#sudo systemctl restart check-sunset.service
+#sudo systemctl status check-sunset.service
