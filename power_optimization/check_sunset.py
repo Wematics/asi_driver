@@ -4,10 +4,10 @@ import subprocess
 import logging
 
 # Set up logging
-logging.basicConfig(filename='/home/pi/sun_times_project/sleep_wake.log', level=logging.INFO, format='%(asctime)s - %(message)s')
+logging.basicConfig(filename='/home/pi/sleep_mode/sleep_wake.log', level=logging.INFO, format='%(asctime)s - %(message)s')
 
 # Path to the lookup table
-CSV_FILE = "/home/pi/sun_times_project/sun_times_dresden.csv"
+CSV_FILE = "/home/pi/sleep_mode/sun_times_dresden.csv"
 
 def read_sun_times(csv_file, year_month):
     logging.info(f"Reading sun times for year-month: {year_month}")
