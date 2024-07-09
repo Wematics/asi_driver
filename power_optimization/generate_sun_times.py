@@ -21,7 +21,7 @@ def generate_sun_times(location_name, latitude, longitude, start_year, years_ahe
 def save_to_csv(filename, sun_times):
     with open(filename, mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["Month", "90 min after Sunrise", "90 min before Sunset"])
+        writer.writerow(["Month", "Sunrise", "Sunset"])
         for sun_time in sun_times:
             writer.writerow(sun_time)
 
