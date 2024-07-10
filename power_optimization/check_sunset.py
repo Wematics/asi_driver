@@ -9,6 +9,8 @@ logging.basicConfig(filename='/home/pi/sleep_mode/sleep_wake.log', level=logging
 # Path to the lookup table
 CSV_FILE = "/home/pi/sleep_mode/sun_times_dresden.csv"
 
+MAX_SLEEP_DURATION = 20 * 3600  # 20 hours in seconds
+
 def read_sun_times(csv_file, year_month):
     logging.info(f"Reading sun times for year-month: {year_month}")
     sunrise = sunset = None
@@ -75,6 +77,9 @@ if __name__ == "__main__":
 
             if sunrise_time:
                 time_diff = (sunrise_time - current_time).total_seconds()
+                if time_diff > MAX_SLEEP_DURATION:
+                    time_diff = MAX_SLEEP_DURATION
+                    logging.info(f"Sleep duration exceeds 20 hours, setting maximum sleep duration of {MAX_SLEEP_DURATION} seconds.")
                 logging.info(f"Current time is past sunset: {sunset_time}. Setting wake time for sunrise.")
                 if set_rtc_wake_alarm(int(time_diff)):
                     shutdown_system()
