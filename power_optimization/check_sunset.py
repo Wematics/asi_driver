@@ -1,3 +1,4 @@
+#sudo chmod +x check_sunset.py
 import csv
 from datetime import datetime, timedelta
 import subprocess
