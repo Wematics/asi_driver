@@ -13,9 +13,12 @@ sudo apt install gpsd gpsd-clients -y
 
 # Configure gpsd
 sudo bash -c 'cat << EOF > /etc/default/gpsd
+
+#sudo nano /etc/default/gpsd
 DEVICES="/dev/ttyAMA3"
 GPSD_OPTIONS="-n"
 USBAUTO="true"
+
 EOF'
 
 # Stop any running gpsd services
