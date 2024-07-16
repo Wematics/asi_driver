@@ -10,3 +10,8 @@ dtoverlay=uart3
 usb_max_current_enable=1
 dtparam=rtc_bbat_vchg=3000000
 ```
+
+sudo raspi-config 
+
+enable VNC; I2C; SERIAL; REMOTE GPIO
+
