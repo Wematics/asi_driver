@@ -6,9 +6,9 @@ sudo nano boot/firmware/config.txt
 ```
 Add or modify the following lines in the file:
 ```
-dtoverlay=uart3
-usb_max_current_enable=1
-dtparam=rtc_bbat_vchg=3000000
+dtoverlay=uart3 #GPS
+usb_max_current_enable=1 #USB Boot
+dtparam=rtc_bbat_vchg=3000000 #RTC 3V
 ```
 
 sudo raspi-config 
