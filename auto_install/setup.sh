@@ -8,8 +8,13 @@ sudo apt-get install -y python3-full python3-pip python3-dev python3-venv libgpi
 python3 -m venv asi_venv
 source asi_venv/bin/activate
 
-# Install Python packages from requirements.txt
-pip install -r requirements.txt
+# Check if requirements.txt exists and install Python packages
+if [ -f "requirements.txt" ]; then
+    pip install -r requirements.txt
+else
+    echo "requirements.txt not found"
+    exit 1
+fi
 
 # Enable UART for GPS
 sudo sed -i '$ a enable_uart=1' /boot/firmware/config.txt
