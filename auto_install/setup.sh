@@ -3,7 +3,7 @@
 echo "Starting setup script..."
 
 # Disable Bluetooth
-echo "Disabling Bluetooth..."
+echo "Disabling Bluetooth to reduce power consumption..."
 sudo systemctl disable bluetooth
 sudo systemctl disable bthelper@.service
 
@@ -160,5 +160,10 @@ sudo systemctl enable set-fan-speed.service
 sudo systemctl start set-fan-speed.service
 
 echo "Setup complete. System will now reboot to apply changes."
-# Reboot to apply changes
-sudo reboot
+# Ask the user if they want to reboot now
+read -p "Setup complete. Do you want to reboot now? (y/n): " choice
+case "$choice" in 
+  y|Y ) echo "Rebooting now..."; sudo reboot;;
+  n|N ) echo "Reboot cancelled. Please reboot manually to apply changes.";;
+  * ) echo "Invalid input. Please reboot manually to apply changes.";;
+esac
