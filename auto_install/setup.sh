@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Disable Bluetooth
+sudo systemctl disable bluetooth
+sudo systemctl disable bthelper@.service
+
 # Enable VNC, I2C, and serial in raspi-config
 sudo raspi-config nonint do_vnc 0
 sudo raspi-config nonint do_i2c 0
