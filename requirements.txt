@@ -4,3 +4,4 @@ gpiod
 pyserial
 adafruit-circuitpython-lis2mdl
 adafruit-circuitpython-ads1x15
+adafruit-circuitpython-gps
