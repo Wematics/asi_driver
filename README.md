@@ -1,9 +1,9 @@
 ## Configuration Instructions
 
 To edit the configuration file, use the following command:
-
+```
 sudo nano boot/firmware/config.txt
-
+```
 Add or modify the following lines in the file:
 ```
 dtoverlay=uart3
