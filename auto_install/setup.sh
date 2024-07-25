@@ -16,7 +16,7 @@ sudo raspi-config nonint do_serial 2
 # Update and install necessary packages
 echo "Updating package list and installing necessary packages..."
 sudo apt-get update
-sudo apt-get install -y python3-full python3-pip python3-dev python3-venv libgpiod2 gpsd gpsd-clients device-tree-compiler git
+sudo apt-get install -y python3-full python3-pip python3-dev python3-venv exiftool libgpiod2 gpsd gpsd-clients device-tree-compiler git
 
 # Clone the GitHub repository
 if [ ! -d "asi_driver" ]; then
