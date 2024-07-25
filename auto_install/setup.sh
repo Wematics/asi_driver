@@ -14,12 +14,27 @@ sudo apt-get update
 sudo apt-get install -y python3-full python3-pip python3-dev python3-venv libgpiod2 gpsd gpsd-clients device-tree-compiler git
 
 # Clone the GitHub repository
-git clone https://github.com/Wematics/asi_driver.git
+if [ ! -d "asi_driver" ]; then
+    git clone https://github.com/Wematics/asi_driver.git
+fi
+
 cd asi_driver
 
 # Create and activate virtual environment
 python3 -m venv asi_venv
 source asi_venv/bin/activate
+
+# Add alias to ~/.bashrc
+if ! grep -q "alias sky=" ~/.bashrc; then
+    echo "alias sky='cd ~/asi_driver && source asi_venv/bin/activate'" >> ~/.bashrc
+    echo "Alias 'sky' added to ~/.bashrc"
+fi
+
+# Source the ~/.bashrc to apply the alias immediately
+source ~/.bashrc
+
+echo "Setup complete. You can now use the 'sky' command to activate the virtual environment and navigate to the project directory."
+
 
 # Check if requirements.txt exists and install Python packages
 if [ -f "requirements.txt" ]; then
