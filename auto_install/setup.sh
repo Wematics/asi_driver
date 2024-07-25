@@ -16,9 +16,6 @@ else
     exit 1
 fi
 
-# Enable UART for GPS
-sudo sed -i '$ a enable_uart=1' /boot/firmware/config.txt
-
 # Create and compile Device Tree Overlay for EMC2301 (Fan)
 cat <<EOF > emc2301-overlay.dts
 /dts-v1/;
