@@ -10,6 +10,7 @@ dtoverlay=uart3 #GPS
 usb_max_current_enable=1 #USB Boot
 dtparam=rtc_bbat_vchg=3000000 #RTC 3V
 dtoverlay=lm75-overlay #Temp. Housing
+dtoverlay=emc2301-overlay #Fan PWM
 ```
 
 sudo raspi-config 
