@@ -149,7 +149,7 @@ After=multi-user.target
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c 'echo 255 | sudo tee /sys/class/hwmon/hwmon2/pwm1'
+ExecStart=/bin/sh -c 'echo 255 | sudo tee /sys/class/hwmon/hwmon3/pwm1'
 
 [Install]
 WantedBy=multi-user.target
