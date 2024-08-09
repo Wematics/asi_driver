@@ -7,8 +7,6 @@ SERVICE_PATH="/etc/systemd/system/${SERVICE_NAME}.service"
 TIMER_PATH="/etc/systemd/system/${TIMER_NAME}.timer"
 SCRIPT_PATH="/home/pi/Desktop/skycam/scripts/sleep/check_sun_times.py"
 WORKING_DIR="/home/pi/Desktop/skycam/scripts/sleep"
-LOG_FILE="${WORKING_DIR}/sleep_wake.log"
-CONFIG_FILE="${WORKING_DIR}/config.json"
 
 # Create the systemd service file
 echo "Creating systemd service file..."
@@ -18,10 +16,10 @@ Description=Sleep Mode Service for SkyCam
 After=network.target
 
 [Service]
-ExecStart=/home/pi/Desktop/skycam/scripts/sleep/check_sun_times.py
+ExecStart=/usr/bin/python3 /home/pi/Desktop/skycam/scripts/sleep/check_sun_times.py
 WorkingDirectory=/home/pi/Desktop/skycam/scripts/sleep
-StandardOutput=syslog
-StandardError=syslog
+StandardOutput=journal
+StandardError=journal
 Restart=on-failure
 User=pi
 Group=pi
@@ -39,7 +37,7 @@ Description=Run SkyCam Sleep Mode Script Periodically
 [Timer]
 OnBootSec=5min
 OnUnitActiveSec=1h
-Unit=sleep-mode.service
+Unit=/etc/systemd/system/sleep-mode.service
 
 [Install]
 WantedBy=timers.target
