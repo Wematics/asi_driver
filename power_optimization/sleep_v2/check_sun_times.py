@@ -50,8 +50,8 @@ def set_rtc_wake_alarm(seconds_until_wake):
         return False
 
 def shutdown_system():
-    logging.info("Shutting down system in 60 seconds")
-    subprocess.run(["sleep", "60"])
+    logging.info("Shutting down system in 90 seconds")
+    subprocess.run(["sleep", "90"])
     try:
         subprocess.run(["sudo", "shutdown", "-h", "+1"], check=True)  # Shutdown in 1 minute
         logging.info("System shutdown initiated")
@@ -67,22 +67,20 @@ if __name__ == "__main__":
     current_time_local = current_time_utc.astimezone(local_tz)
 
     current_day_month = current_time_local.strftime("%m-%d")
-    today_date = current_time_local.strftime("%Y-%m-%d")
 
     sunrise_utc, sunset_utc = read_sun_times(CSV_FILE, current_day_month)
 
     if sunrise_utc and sunset_utc:
-        sunrise_time_local = datetime.strptime(f"{today_date} {sunrise_utc}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
-        sunset_time_local = datetime.strptime(f"{today_date} {sunset_utc}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
+        sunrise_time_local = datetime.strptime(f"{current_day_month} {sunrise_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
+        sunset_time_local = datetime.strptime(f"{current_day_month} {sunset_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
 
         if current_time_local > sunset_time_local:
             next_day = current_time_local + timedelta(days=1)
             next_day_month = next_day.strftime("%m-%d")
-            next_day_date = next_day.strftime("%Y-%m-%d")
 
             sunrise_next_day_utc, _ = read_sun_times(CSV_FILE, next_day_month)
             if sunrise_next_day_utc:
-                sunrise_time_next_day_local = datetime.strptime(f"{next_day_date} {sunrise_next_day_utc}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
+                sunrise_time_next_day_local = datetime.strptime(f"{next_day_month} {sunrise_next_day_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
 
             if current_time_local < sunrise_time_next_day_local:
                 time_diff = (sunrise_time_next_day_local - current_time_local).total_seconds()
