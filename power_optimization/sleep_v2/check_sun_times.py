@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import csv
 import json
 import os
@@ -8,19 +9,19 @@ import subprocess
 from logging.handlers import RotatingFileHandler
 
 # Set up logging with log rotation
-log_file = '/home/pi/sleep_mode/sleep_wake.log'
+log_file = '/home/pi/Desktop/skycam/scripts/sleep/sleep_wake.log'
 handler = RotatingFileHandler(log_file, maxBytes=50*1024*1024, backupCount=3)  # 50 MB per log file, keep 3 backups
 logging.basicConfig(handlers=[handler], level=logging.INFO, format='%(asctime)s - %(message)s')
 
 # Load configuration
-CONFIG_FILE = "/home/pi/sleep_mode/config.json"
+CONFIG_FILE = "/home/pi/Desktop/skycam/scripts/sleep/config.json"
 with open(CONFIG_FILE, 'r') as config_file:
     config = json.load(config_file)
     location_name = config['location_name']
     timezone_name = config['timezone']
 
 # Path to the lookup table
-CSV_FILE = f"/home/pi/sleep_mode/sun_times_{location_name.replace(' ', '_')}_UTC.csv"
+CSV_FILE = f"/home/pi/Desktop/skycam/scripts/sleep/sun_times_{location_name.replace(' ', '_')}_UTC.csv"
 
 MAX_SLEEP_DURATION = 20 * 3600  # 20 hours in seconds
 RTC_SYNC_INTERVAL = 24 * 3600  # 24 hours in seconds
