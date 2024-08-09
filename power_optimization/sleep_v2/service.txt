@@ -1,0 +1,31 @@
+sudo nano /etc/systemd/system/sleep-mode.service
+
+[Unit]
+Description=Sleep Mode Service for SkyCam
+After=network.target
+
+[Service]
+ExecStart=/home/pi/Desktop/skycam/scripts/sleep/check_sun_times.py
+WorkingDirectory=/home/pi/Desktop/skycam/scripts/sleep
+StandardOutput=syslog
+StandardError=syslog
+Restart=on-failure
+User=pi
+Group=pi
+
+[Install]
+WantedBy=multi-user.target
+
+
+sudo nano /etc/systemd/system/sleep-mode.timer
+
+[Unit]
+Description=Run SkyCam Sleep Mode Script Periodically
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1h
+Unit=sleep-mode.service
+
+[Install]
+WantedBy=timers.target
