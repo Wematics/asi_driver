@@ -50,10 +50,13 @@ sudo systemctl status check-sunset.service
 sudo systemctl status check-sunset.timer
 
 
-sudo systemctl disable check-sunset.service
-sudo systemctl disable check-sunset.timer
 sudo systemctl stop check-sunset.service
 sudo systemctl stop check-sunset.timer
+sudo systemctl disable check-sunset.service
+sudo systemctl disable check-sunset.timer
+sudo shutdown -c
+sudo reboot
+
 
 
 
