@@ -50,13 +50,13 @@ def set_rtc_wake_alarm(seconds_until_wake):
         return False
 
 def shutdown_system():
-    logging.info("Shutting down system in 45 seconds")
-    subprocess.run(["sleep", "45"])
+    logging.info("Shutting down system in 60 seconds")
+    subprocess.run(["sleep", "60"])
     try:
-        subprocess.run(["sudo", "shutdown", "-h", "now"], check=True)
-        logging.info("System shutdown")
+        subprocess.run(["sudo", "shutdown", "-h", "+1"], check=True)  # Shutdown in 1 minute
+        logging.info("System shutdown initiated")
     except subprocess.CalledProcessError as e:
-        logging.error(f"Failed to shutdown the system: {e}")
+        logging.error(f"Failed to initiate system shutdown: {e}")
 
 if __name__ == "__main__":
     # Load the timezone
@@ -100,4 +100,3 @@ if __name__ == "__main__":
             logging.info(f"Current time is before sunset: {sunset_time_local}. System will remain on.")
     else:
         logging.error("Sunrise and sunset times not found for the current day.")
-
