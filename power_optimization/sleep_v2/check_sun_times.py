@@ -9,7 +9,7 @@ from logging.handlers import RotatingFileHandler
 
 # Set up logging with log rotation
 log_file = '/home/pi/sleep_mode/sleep_wake.log'
-handler = RotatingFileHandler(log_file, maxBytes=5*1024*1024, backupCount=3)  # 5 MB per log file, keep 3 backups
+handler = RotatingFileHandler(log_file, maxBytes=50*1024*1024, backupCount=3)  # 50 MB per log file, keep 3 backups
 logging.basicConfig(handlers=[handler], level=logging.INFO, format='%(asctime)s - %(message)s')
 
 # Load configuration
