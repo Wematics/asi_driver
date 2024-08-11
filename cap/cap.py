@@ -41,7 +41,7 @@ with Picamera2() as picam2:
         request.release()
 
         # Log and print that the frame was captured
-        log_message = f"Captured frame with exposure time {actual_exp_time} milliseconds."
+        log_message = f"Captured frame with exposure time {actual_exp_time} microseconds."
         logging.info(log_message)
         print(log_message)
 
