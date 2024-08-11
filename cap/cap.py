@@ -20,9 +20,15 @@ with Picamera2() as picam2:
         raw={"format": "SRGGB12", "size": (4056, 3040)}
     )
     picam2.configure(config)
+    
+    # Set a frame rate limit to match the longest exposure time plus a buffer
+    max_exposure_time = 65000000  # 65 seconds in microseconds
+    frame_duration = max_exposure_time + 1000000  # 65s + 1s buffer = 66 seconds
+    picam2.set_controls({"FrameDurationLimits": (frame_duration, frame_duration)})  # Frame duration to accommodate long exposures
+
     picam2.start()
 
-    exposure_list = [55000000, 60000000, 65000000]  # 50s, 80s, 100s in microseconds
+    exposure_list = [55000000, 60000000, 65000000]  # 55s, 60s, 65s in microseconds
 
     for exposure_time in exposure_list:
         picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": 8.0})
