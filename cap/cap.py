@@ -22,7 +22,7 @@ with Picamera2() as picam2:
     picam2.configure(config)
     picam2.start()
 
-    exposure_list = [50000000, 80000000, 100000000]  # 50s, 80s, 100s in microseconds
+    exposure_list = [55000000, 60000000, 65000000]  # 50s, 80s, 100s in microseconds
 
     for exposure_time in exposure_list:
         picam2.set_controls({"ExposureTime": exposure_time, "AnalogueGain": 8.0})
