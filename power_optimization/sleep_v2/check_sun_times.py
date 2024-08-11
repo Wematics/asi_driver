@@ -9,7 +9,6 @@ import subprocess
 from logging.handlers import RotatingFileHandler
 
 # Set up logging with log rotation to ensure logs do not exceed a certain size.
-# This helps in maintaining logs without consuming too much disk space.
 log_file = '/home/pi/Desktop/skycam/scripts/sleep/sleep_wake.log'
 handler = RotatingFileHandler(log_file, maxBytes=50*1024*1024, backupCount=3)  # 50 MB per log file, keep 3 backups
 logging.basicConfig(handlers=[handler], level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -17,7 +16,6 @@ logging.basicConfig(handlers=[handler], level=logging.INFO, format='%(asctime)s 
 logging.info("Script started.")
 
 # Load configuration from the specified JSON file.
-# The configuration includes location name and timezone information.
 CONFIG_FILE = "/home/pi/Desktop/skycam/scripts/sleep/config.json"
 if not os.path.exists(CONFIG_FILE):
     logging.error(f"Configuration file not found: {CONFIG_FILE}")
@@ -31,7 +29,6 @@ with open(CONFIG_FILE, 'r') as config_file:
 logging.info(f"Loaded configuration: location_name={location_name}, timezone_name={timezone_name}")
 
 # Path to the CSV file containing sunrise and sunset times in UTC.
-# The path is constructed based on the location name provided in the configuration.
 CSV_FILE = f"/home/pi/Desktop/skycam/scripts/sleep/sun_times_{location_name.replace(' ', '_')}_UTC.csv"
 if not os.path.exists(CSV_FILE):
     logging.error(f"Sun times CSV file not found: {CSV_FILE}")
@@ -128,9 +125,9 @@ if __name__ == "__main__":
             sunrise_time_local = datetime.strptime(f"{current_day_month} {sunrise_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
             sunset_time_local = datetime.strptime(f"{current_day_month} {sunset_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
 
-            logging.info(f"Sunrise time local: {sunrise_time_local}, Sunset time local: {sunset_time_local}")
+            logging.info(f"Sunrise time local: {sunrise_time_local.time()}, Sunset time local: {sunset_time_local.time()}")
 
-            if current_time_local > sunset_time_local:
+            if current_time_local.time() > sunset_time_local.time():
                 # If the current time is after sunset, calculate the time until the next sunrise.
                 logging.info("Current time is after sunset.")
                 next_day = current_time_local + timedelta(days=1)
@@ -138,7 +135,7 @@ if __name__ == "__main__":
                 sunrise_next_day_utc, _ = read_sun_times(CSV_FILE, next_day_month)
                 if sunrise_next_day_utc:
                     sunrise_time_next_day_local = datetime.strptime(f"{next_day_month} {sunrise_next_day_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
-                    logging.info(f"Next day's sunrise time local: {sunrise_time_next_day_local}")
+                    logging.info(f"Next day's sunrise time local: {sunrise_time_next_day_local.time()}")
 
                     time_diff = (sunrise_time_next_day_local - current_time_local).total_seconds()
                     if time_diff > MAX_SLEEP_DURATION:
