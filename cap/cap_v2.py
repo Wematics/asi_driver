@@ -14,7 +14,7 @@ images = {}
 metadata = []
 
 # Set up the desired exposure times
-exposure_list = [55000000, 60000000, 65000000]  # 55s, 60s, 65s in microseconds
+exposure_list = [5000000, 55000000, 60000000, 65000000]  # 55s, 60s, 65s in microseconds
 
 for exposure_time in exposure_list:
     try:
