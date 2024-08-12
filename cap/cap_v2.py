@@ -6,7 +6,7 @@ import time
 
 # Set up logging
 log_filename = "capture_log.txt"
-logging.basicConfig(filename=log_filename, level=logging.INFO, 
+logging.basicConfig(filename=log_filename, level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -25,13 +25,13 @@ for exposure_time in exposure_list:
             raw={"format": "SRGGB12", "size": (4056, 3040)}
         )
         picam2.configure(config)
-        
+
         # Start the camera
         picam2.start()
-        
+
         # Set the frame duration and controls
         picam2.set_controls({
-            "ExposureTime": exposure_time, 
+            "ExposureTime": exposure_time,
             "AnalogueGain": 8.0,
             "FrameDurationLimits": (100000000, 100000000)  # 100s in microseconds
         })
@@ -56,7 +56,7 @@ for exposure_time in exposure_list:
 
         # Immediately print the exposure time after capturing the frame
         print(f"Captured frame with exposure time {actual_exp_time} microseconds.")
-        
+
         # Log the captured frame
         log_message = f"Captured frame with exposure time {actual_exp_time} microseconds."
         logging.info(log_message)
