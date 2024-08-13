@@ -3,7 +3,7 @@ import csv
 import json
 import os
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 import pytz
 import subprocess
 from logging.handlers import RotatingFileHandler
@@ -70,6 +70,26 @@ def read_sun_times(csv_file, day_month):
 
     return sunrise, sunset
 
+def calculate_time_difference(current_time, target_time):
+    """
+    Calculate the difference in seconds between two times, accounting for crossing midnight.
+    
+    Parameters:
+    - current_time: The current time as a datetime.time object.
+    - target_time: The target time as a datetime.time object (e.g., next sunrise).
+    
+    Returns:
+    - time_diff_seconds: The difference in seconds between the current time and the target time.
+    """
+    current_time_seconds = current_time.hour * 3600 + current_time.minute * 60 + current_time.second
+    target_time_seconds = target_time.hour * 3600 + target_time.minute * 60 + target_time.second
+
+    if target_time_seconds < current_time_seconds:
+        # Adjust for crossing midnight by adding 24 hours (86400 seconds)
+        target_time_seconds += 86400
+
+    return target_time_seconds - current_time_seconds
+
 def set_rtc_wake_alarm(seconds_until_wake):
     """
     Sets the RTC wake alarm to wake the system after a specified number of seconds.
@@ -121,23 +141,24 @@ if __name__ == "__main__":
         sunrise_utc, sunset_utc = read_sun_times(CSV_FILE, current_day_month)
 
         if sunrise_utc and sunset_utc:
-            # Convert the sunrise and sunset times from UTC to local time.
-            sunrise_time_local = datetime.strptime(f"{current_day_month} {sunrise_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
-            sunset_time_local = datetime.strptime(f"{current_day_month} {sunset_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
+            # Convert the sunrise and sunset times from UTC to local time (hours and minutes only).
+            sunrise_time_local = datetime.strptime(f"{current_day_month} {sunrise_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz).time()
+            sunset_time_local = datetime.strptime(f"{current_day_month} {sunset_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz).time()
 
-            logging.info(f"Sunrise time local: {sunrise_time_local.time()}, Sunset time local: {sunset_time_local.time()}")
+            logging.info(f"Sunrise time local: {sunrise_time_local}, Sunset time local: {sunset_time_local}")
 
-            if current_time_local.time() > sunset_time_local.time():
+            if current_time_local.time() > sunset_time_local:
                 # If the current time is after sunset, calculate the time until the next sunrise.
                 logging.info("Current time is after sunset.")
                 next_day = current_time_local + timedelta(days=1)
                 next_day_month = next_day.strftime("%m-%d")
                 sunrise_next_day_utc, _ = read_sun_times(CSV_FILE, next_day_month)
                 if sunrise_next_day_utc:
-                    sunrise_time_next_day_local = datetime.strptime(f"{next_day_month} {sunrise_next_day_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz)
-                    logging.info(f"Next day's sunrise time local: {sunrise_time_next_day_local.time()}")
+                    sunrise_time_next_day_local = datetime.strptime(f"{next_day_month} {sunrise_next_day_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz).time()
+                    logging.info(f"Next day's sunrise time local: {sunrise_time_next_day_local}")
 
-                    time_diff = (sunrise_time_next_day_local - current_time_local).total_seconds()
+                    time_diff = calculate_time_difference(current_time_local.time(), sunrise_time_next_day_local)
+
                     if time_diff > MAX_SLEEP_DURATION:
                         time_diff = MAX_SLEEP_DURATION
                         logging.info(f"Sleep duration exceeds 20 hours, setting maximum sleep duration of {MAX_SLEEP_DURATION} seconds.")
