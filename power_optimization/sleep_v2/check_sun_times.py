@@ -3,7 +3,7 @@ import csv
 import json
 import os
 import logging
-from datetime import datetime, time, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 import pytz
 import subprocess
 from logging.handlers import RotatingFileHandler
@@ -36,6 +36,20 @@ if not os.path.exists(CSV_FILE):
 
 # Define the maximum sleep duration to prevent the system from sleeping for too long.
 MAX_SLEEP_DURATION = 20 * 3600  # 20 hours in seconds
+
+def reset_rtc_wakealarm():
+    """
+    Resets the RTC wake alarm by writing 0 to /sys/class/rtc/rtc0/wakealarm.
+    This is used to ensure that the device is not busy.
+    """
+    try:
+        logging.info("Resetting RTC wakealarm by echoing 0 to /sys/class/rtc/rtc0/wakealarm.")
+        subprocess.run(["sudo", "bash", "-c", "echo 0 > /sys/class/rtc/rtc0/wakealarm"], check=True)
+        logging.info("RTC wakealarm reset successfully.")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Failed to reset RTC wakealarm: {e}")
+        return False
+    return True
 
 def read_sun_times(csv_file, day_month):
     """
@@ -73,11 +87,11 @@ def read_sun_times(csv_file, day_month):
 def calculate_time_difference(current_time, target_time):
     """
     Calculate the difference in seconds between two times, accounting for crossing midnight.
-    
+
     Parameters:
     - current_time: The current time as a datetime.time object.
     - target_time: The target time as a datetime.time object (e.g., next sunrise).
-    
+
     Returns:
     - time_diff_seconds: The difference in seconds between the current time and the target time.
     """
@@ -100,6 +114,9 @@ def set_rtc_wake_alarm(seconds_until_wake):
     Returns:
     - True if the RTC wake alarm was set successfully, False otherwise.
     """
+    if not reset_rtc_wakealarm():
+        return False
+
     try:
         logging.info(f"Setting RTC wake alarm for {seconds_until_wake} seconds from now.")
         subprocess.run(["sudo", "bash", "-c", f"echo +{seconds_until_wake} > /sys/class/rtc/rtc0/wakealarm"], check=True)
@@ -131,40 +148,46 @@ if __name__ == "__main__":
         logging.info("Getting current UTC time from RTC and converting to local time.")
         current_time_utc = datetime.now(timezone.utc)
         current_time_local = current_time_utc.astimezone(local_tz)
-        logging.info(f"Current time: UTC={current_time_utc}, Local={current_time_local}")
+        logging.info(f"UTC time device: {current_time_utc}, Local time device: {current_time_local}")
 
         # Extract the current day and month for looking up sunrise and sunset times.
         current_day_month = current_time_local.strftime("%m-%d")
-        logging.info(f"Current day-month: {current_day_month}")
+        current_year = current_time_local.year
+        logging.info(f"Current day: {current_day_month}, Year: {current_year}")
 
         # Read the sunrise and sunset times from the CSV file.
         sunrise_utc, sunset_utc = read_sun_times(CSV_FILE, current_day_month)
+        logging.info(f"CSV file time for sunset UTC: {sunset_utc}")
 
         if sunrise_utc and sunset_utc:
-            # Convert the sunrise and sunset times from UTC to local time (hours and minutes only).
-            sunrise_time_local = datetime.strptime(f"{current_day_month} {sunrise_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz).time()
-            sunset_time_local = datetime.strptime(f"{current_day_month} {sunset_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz).time()
+            # Convert the sunset time from UTC to local time, assuming the current year.
+            sunset_time_utc = datetime.strptime(f"{current_year}-{current_day_month} {sunset_utc}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+            sunset_time_local = sunset_time_utc.astimezone(local_tz)
+            logging.info(f"Sunset local: {sunset_time_local.time()}")
 
-            logging.info(f"Sunrise time local: {sunrise_time_local}, Sunset time local: {sunset_time_local}")
-
-            if current_time_local.time() > sunset_time_local:
+            if current_time_local.time() > sunset_time_local.time():
                 # If the current time is after sunset, calculate the time until the next sunrise.
-                logging.info("Current time is after sunset.")
+                logging.info(f"Current time {current_time_local.time()} is after sunset {sunset_time_local.time()} - going offline.")
                 next_day = current_time_local + timedelta(days=1)
                 next_day_month = next_day.strftime("%m-%d")
                 sunrise_next_day_utc, _ = read_sun_times(CSV_FILE, next_day_month)
                 if sunrise_next_day_utc:
-                    sunrise_time_next_day_local = datetime.strptime(f"{next_day_month} {sunrise_next_day_utc}", "%m-%d %H:%M").replace(tzinfo=timezone.utc).astimezone(local_tz).time()
-                    logging.info(f"Next day's sunrise time local: {sunrise_time_next_day_local}")
+                    # Convert the next day's sunrise time from UTC to local time, assuming the year from RTC.
+                    sunrise_time_next_day_utc = datetime.strptime(f"{next_day.year}-{next_day_month} {sunrise_next_day_utc}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+                    sunrise_time_next_day_local = sunrise_time_next_day_utc.astimezone(local_tz)
+                    logging.info(f"Next day's sunrise time local: {sunrise_time_next_day_local.time()}")
 
-                    time_diff = calculate_time_difference(current_time_local.time(), sunrise_time_next_day_local)
+                    time_diff = calculate_time_difference(current_time_local.time(), sunrise_time_next_day_local.time())
+                    logging.info(f"Time difference to next day sunrise: {time_diff} seconds")
 
                     if time_diff > MAX_SLEEP_DURATION:
                         time_diff = MAX_SLEEP_DURATION
                         logging.info(f"Sleep duration exceeds 20 hours, setting maximum sleep duration of {MAX_SLEEP_DURATION} seconds.")
 
+                    wake_up_time = current_time_local + timedelta(seconds=time_diff)
+                    logging.info(f"Wake up time local: {wake_up_time.time()}")
+
                     # Set the RTC wake alarm and shut down the system.
-                    logging.info("Setting RTC wake alarm and shutting down.")
                     if set_rtc_wake_alarm(int(time_diff)):
                         shutdown_system()
                     else:
@@ -172,7 +195,7 @@ if __name__ == "__main__":
                 else:
                     logging.error(f"No sunrise time found for next day ({next_day_month}). Staying online.")
             else:
-                logging.info("Current time is before sunset. System will remain on.")
+                logging.info(f"Current time {current_time_local.time()} is before sunset {sunset_time_local.time()} - remaining online.")
         else:
             logging.error(f"Sunrise and sunset times not found for {current_day_month}. Staying online.")
 
