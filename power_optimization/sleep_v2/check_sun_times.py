@@ -126,17 +126,15 @@ def set_rtc_wake_alarm(seconds_until_wake):
         logging.error(f"Failed to set RTC wake alarm: {e}")
         return False
 
-def shutdown_system():
+def issue_shutdown():
     """
-    Shuts down the system after a brief delay to ensure all processes are closed properly.
+    Issues a system shutdown command and logs it.
     """
-    logging.info("Shutting down system in 90 seconds.")
-    subprocess.run(["sleep", "90"])
     try:
-        logging.info("Initiating system shutdown.")
-        subprocess.run(["sudo", "shutdown", "-h", "+1"], check=True)  # Shutdown in 1 minute
+        logging.info("Issuing system shutdown command for 2 minutes from now.")
+        subprocess.run(["sudo", "shutdown", "-h", "+2"], check=True)
     except subprocess.CalledProcessError as e:
-        logging.error(f"Failed to initiate system shutdown: {e}")
+        logging.error(f"Failed to issue shutdown command: {e}")
 
 if __name__ == "__main__":
     try:
@@ -187,9 +185,9 @@ if __name__ == "__main__":
                     wake_up_time = current_time_local + timedelta(seconds=time_diff)
                     logging.info(f"Wake up time local: {wake_up_time.time()}")
 
-                    # Set the RTC wake alarm and shut down the system.
+                    # Set the RTC wake alarm and issue shutdown command.
                     if set_rtc_wake_alarm(int(time_diff)):
-                        shutdown_system()
+                        issue_shutdown()
                     else:
                         logging.info("Wake-up alarm not set, system will remain on.")
                 else:
@@ -198,6 +196,9 @@ if __name__ == "__main__":
                 logging.info(f"Current time {current_time_local.time()} is before sunset {sunset_time_local.time()} - remaining online.")
         else:
             logging.error(f"Sunrise and sunset times not found for {current_day_month}. Staying online.")
+
+        logging.info("Script execution finished.")
+        exit(0)  # Ensure the script exits cleanly.
 
     except Exception as e:
         logging.error(f"Unexpected error: {e}")
