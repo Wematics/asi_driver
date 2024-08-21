@@ -124,6 +124,12 @@ def set_rtc_wake_alarm(seconds_until_wake):
         logging.info(f"Setting RTC wake alarm for {seconds_until_wake} seconds from now.")
         subprocess.run(["sudo", "bash", "-c", f"echo +{seconds_until_wake} > /sys/class/rtc/rtc0/wakealarm"], check=True)
         logging.info("RTC wake alarm successfully set.")
+
+        # Validate and log the RTC wake-up time by reading from the wakealarm file
+        result = subprocess.run(["cat", "/sys/class/rtc/rtc0/wakealarm"], capture_output=True, text=True)
+        wakealarm_time = result.stdout.strip()
+        logging.info(f"RTC wake-up time set: {wakealarm_time}")
+
         return True
     except subprocess.CalledProcessError as e:
         logging.error(f"Failed to set RTC wake alarm: {e}")
