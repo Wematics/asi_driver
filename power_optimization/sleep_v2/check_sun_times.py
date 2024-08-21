@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 import pytz
 import subprocess
 from logging.handlers import RotatingFileHandler
+import time  # Import time for delay
 
 # Set up logging with log rotation to ensure logs do not exceed a certain size.
 log_file = '/home/pi/Desktop/skycam/scripts/sleep/sleep_wake.log'
@@ -116,6 +117,8 @@ def set_rtc_wake_alarm(seconds_until_wake):
     """
     if not reset_rtc_wakealarm():
         return False
+
+    time.sleep(5)  # Introduce a 5-second delay after resetting the RTC wake alarm
 
     try:
         logging.info(f"Setting RTC wake alarm for {seconds_until_wake} seconds from now.")
